@@ -1,18 +1,14 @@
-// Middleware para verificar se o usuário logado tem o tipo correto
-function autorizarTipos(...tiposPermitidos) {
+module.exports = function verificarPapel(papelNecessario) {
   return (req, res, next) => {
-    const { usuario } = req; // vem do autenticarToken (JWT)
-
-    if (!usuario) {
+    if (!req.user) {
+      console.error("🚫 req.user está indefinido no roleMiddleware!");
       return res.status(401).json({ error: "Usuário não autenticado" });
     }
 
-    if (!tiposPermitidos.includes(usuario.tipo)) {
-      return res.status(403).json({ error: "Acesso negado: permissão insuficiente" });
+    if (req.user.tipo !== papelNecessario) {
+      return res.status(403).json({ error: "Acesso negado: permissão insuficiente." });
     }
 
-    next(); // tudo certo, segue para a rota
+    next();
   };
-}
-
-module.exports = autorizarTipos;
+};

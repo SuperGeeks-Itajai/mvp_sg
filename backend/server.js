@@ -14,6 +14,9 @@ const moduloRoutes = require("./src/routes/moduloRoutes");
 const alunoRoutes = require("./src/routes/alunoRoutes");
 const funcionarioRoutes = require("./src/routes/funcionarioRoutes");
 const aulaRoutes = require("./src/routes/aulaRoutes");
+const historicoRoutes = require("./src/routes/historicoRoutes");
+
+
 
 
 
@@ -24,6 +27,7 @@ app.use("/modulos", moduloRoutes);
 app.use("/alunos", alunoRoutes);
 app.use("/funcionarios", funcionarioRoutes);
 app.use("/aulas", aulaRoutes);
+app.use("/historico", historicoRoutes);
 
 // Rota inicial
 app.get("/", (req, res) => {

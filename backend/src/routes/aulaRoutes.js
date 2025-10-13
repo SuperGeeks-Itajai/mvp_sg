@@ -1,86 +1,105 @@
 const express = require("express");
-const { Aula, Modulo } = require("../models");
-const authMiddleware = require("../middlewares/authMiddleware");
-const roleMiddleware = require("../middlewares/roleMiddleware");
+const { Aula } = require("../models");
+const autenticarToken = require("../middlewares/authMiddleware");
+const verificarPapel = require("../middlewares/roleMiddleware");
 
 const router = express.Router();
 
 /**
- * GET /aulas
+ * 📘 GET /aulas
  * Lista todas as aulas (aluno e funcionário podem ver)
  */
-router.get("/", authMiddleware, async (req, res) => {
+router.get("/", autenticarToken, async (req, res) => {
   try {
-    const aulas = await Aula.findAll({ include: [{ model: Modulo }] });
+    const aulas = await Aula.findAll({ order: [["id", "ASC"]] });
     res.json(aulas);
   } catch (error) {
-    console.error("Erro ao listar aulas:", error);
-    res.status(500).json({ error: "Erro ao listar aulas" });
+    console.error("Erro ao buscar aulas:", error);
+    res.status(500).json({ error: "Erro ao buscar aulas." });
   }
 });
 
 /**
- * GET /aulas/:id
- * Detalhes de uma aula
+ * 📘 GET /aulas/:id
+ * Detalha uma aula específica (aluno e funcionário podem ver)
  */
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", autenticarToken, async (req, res) => {
   try {
-    const aula = await Aula.findByPk(req.params.id, { include: [Modulo] });
-    if (!aula) return res.status(404).json({ error: "Aula não encontrada" });
+    const aula = await Aula.findByPk(req.params.id);
+    if (!aula) {
+      return res.status(404).json({ error: "Aula não encontrada." });
+    }
     res.json(aula);
   } catch (error) {
     console.error("Erro ao buscar aula:", error);
-    res.status(500).json({ error: "Erro ao buscar aula" });
+    res.status(500).json({ error: "Erro ao buscar aula." });
   }
 });
 
 /**
- * POST /aulas
- * Criar nova aula (apenas funcionário)
+ * 🧱 POST /aulas
+ * Cria uma nova aula (somente funcionário)
  */
-router.post("/", authMiddleware, roleMiddleware("funcionario"), async (req, res) => {
+router.post("/", autenticarToken, verificarPapel("funcionario"), async (req, res) => {
   try {
     const { modulo_id, titulo, conteudo, ordem, resumo } = req.body;
-    const aula = await Aula.create({ modulo_id, titulo, conteudo, ordem, resumo });
+
+    if (!modulo_id || !titulo || !ordem) {
+      return res.status(400).json({ error: "Campos obrigatórios: modulo_id, titulo, ordem." });
+    }
+
+    const aula = await Aula.create({
+      modulo_id,
+      titulo,
+      conteudo,
+      ordem,
+      resumo,
+    });
+
     res.status(201).json(aula);
   } catch (error) {
     console.error("Erro ao criar aula:", error);
-    res.status(500).json({ error: "Erro ao criar aula" });
+    res.status(500).json({ error: "Erro ao criar aula." });
   }
 });
 
 /**
- * PUT /aulas/:id
- * Atualizar aula (apenas funcionário)
+ * ✏️ PUT /aulas/:id
+ * Atualiza uma aula (somente funcionário)
  */
-router.put("/:id", authMiddleware, roleMiddleware("funcionario"), async (req, res) => {
+router.put("/:id", autenticarToken, verificarPapel("funcionario"), async (req, res) => {
   try {
-    const aula = await Aula.findByPk(req.params.id);
-    if (!aula) return res.status(404).json({ error: "Aula não encontrada" });
-
     const { modulo_id, titulo, conteudo, ordem, resumo } = req.body;
+    const aula = await Aula.findByPk(req.params.id);
+
+    if (!aula) {
+      return res.status(404).json({ error: "Aula não encontrada." });
+    }
+
     await aula.update({ modulo_id, titulo, conteudo, ordem, resumo });
-    res.json(aula);
+    res.json({ message: "Aula atualizada com sucesso!", aula });
   } catch (error) {
     console.error("Erro ao atualizar aula:", error);
-    res.status(500).json({ error: "Erro ao atualizar aula" });
+    res.status(500).json({ error: "Erro ao atualizar aula." });
   }
 });
 
 /**
- * DELETE /aulas/:id
- * Remover aula (apenas funcionário)
+ * ❌ DELETE /aulas/:id
+ * Exclui uma aula (somente funcionário)
  */
-router.delete("/:id", authMiddleware, roleMiddleware("funcionario"), async (req, res) => {
+router.delete("/:id", autenticarToken, verificarPapel("funcionario"), async (req, res) => {
   try {
     const aula = await Aula.findByPk(req.params.id);
-    if (!aula) return res.status(404).json({ error: "Aula não encontrada" });
+    if (!aula) {
+      return res.status(404).json({ error: "Aula não encontrada." });
+    }
 
     await aula.destroy();
-    res.json({ message: "Aula excluída com sucesso" });
+    res.json({ message: "Aula excluída com sucesso!" });
   } catch (error) {
     console.error("Erro ao excluir aula:", error);
-    res.status(500).json({ error: "Erro ao excluir aula" });
+    res.status(500).json({ error: "Erro ao excluir aula." });
   }
 });
 

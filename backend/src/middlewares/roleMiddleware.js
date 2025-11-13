@@ -1,12 +1,13 @@
-module.exports = function verificarPapel(papelNecessario) {
+module.exports = (rolesPermitidos = []) => {
   return (req, res, next) => {
-    if (!req.user) {
-      console.error("🚫 req.user está indefinido no roleMiddleware!");
-      return res.status(401).json({ error: "Usuário não autenticado" });
+    const tipo = req.user?.tipo;
+
+    if (!tipo) {
+      return res.status(401).json({ error: "Usuário não autenticado." });
     }
 
-    if (req.user.tipo !== papelNecessario) {
-      return res.status(403).json({ error: "Acesso negado: permissão insuficiente." });
+    if (!rolesPermitidos.includes(tipo)) {
+      return res.status(403).json({ error: "Permissão insuficiente." });
     }
 
     next();

@@ -9,7 +9,7 @@ const router = express.Router();
  * GET /modulos
  * Aluno e Funcionário podem listar todos os módulos
  */
-router.get("/", autenticarToken, autorizarTipos("aluno", "funcionario"), async (req, res) => {
+router.get("/", autenticarToken, autorizarTipos(["aluno", "funcionario"]), async (req, res) => {
   try {
     const modulos = await Modulo.findAll();
     res.json(modulos);
@@ -23,7 +23,7 @@ router.get("/", autenticarToken, autorizarTipos("aluno", "funcionario"), async (
  * GET /modulos/:id
  * Aluno e Funcionário podem ver um módulo específico
  */
-router.get("/:id", autenticarToken, autorizarTipos("aluno", "funcionario"), async (req, res) => {
+router.get("/:id", autenticarToken, autorizarTipos(["aluno", "funcionario"]), async (req, res) => {
   try {
     const modulo = await Modulo.findByPk(req.params.id);
     if (!modulo) {
@@ -40,7 +40,7 @@ router.get("/:id", autenticarToken, autorizarTipos("aluno", "funcionario"), asyn
  * POST /modulos
  * Apenas Funcionário pode criar
  */
-router.post("/", autenticarToken, autorizarTipos("funcionario"), async (req, res) => {
+router.post("/", autenticarToken, autorizarTipos(["funcionario"]), async (req, res) => {
   try {
     const { nome, descricao } = req.body;
     const modulo = await Modulo.create({ nome, descricao });
@@ -55,7 +55,7 @@ router.post("/", autenticarToken, autorizarTipos("funcionario"), async (req, res
  * PUT /modulos/:id
  * Apenas Funcionário pode atualizar
  */
-router.put("/:id", autenticarToken, autorizarTipos("funcionario"), async (req, res) => {
+router.put("/:id", autenticarToken, autorizarTipos(["funcionario"]), async (req, res) => {
   try {
     const { nome, descricao } = req.body;
     const modulo = await Modulo.findByPk(req.params.id);
@@ -79,7 +79,7 @@ router.put("/:id", autenticarToken, autorizarTipos("funcionario"), async (req, r
  * DELETE /modulos/:id
  * Apenas Funcionário pode excluir
  */
-router.delete("/:id", autenticarToken, autorizarTipos("funcionario"), async (req, res) => {
+router.delete("/:id", autenticarToken, autorizarTipos(["funcionario"]), async (req, res) => {
   try {
     const modulo = await Modulo.findByPk(req.params.id);
 

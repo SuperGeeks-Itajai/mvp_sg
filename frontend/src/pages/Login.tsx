@@ -13,7 +13,7 @@ export default function Login() {
     setErro("");
 
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch("http://localhost:3000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -29,9 +29,20 @@ export default function Login() {
       // Salva o token localmente
       localStorage.setItem("token", data.token);
 
-      // Redireciona conforme o tipo de usuário
-      if (data.tipo === "aluno") navigate("/aluno/dashboard");
-      else if (data.tipo === "funcionario") navigate("/funcionario/dashboard");
+      // Garante que o backend enviou o usuário corretamente
+      if (!data.usuario || !data.usuario.tipo) {
+        setErro("Resposta inválida do servidor");
+        return;
+      }
+
+      // Redireciona conforme o tipo
+      if (data.usuario.tipo === "aluno") {
+        navigate("/aluno/dashboard");
+      } else if (data.usuario.tipo === "funcionario") {
+        navigate("/funcionario/dashboard");
+      } else {
+        setErro("Tipo de usuário desconhecido");
+      }
 
     } catch (err) {
       console.error("Erro ao conectar:", err);

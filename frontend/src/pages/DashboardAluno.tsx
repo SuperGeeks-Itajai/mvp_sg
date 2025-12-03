@@ -32,53 +32,60 @@ export default function DashboardAluno() {
 
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        // Dados do aluno
-        const userRes = await fetch("http://localhost:3000/auth/login", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  async function loadData() {
+    try {
+      // ====== 1) CARREGA USUÁRIO ======
+      const userRes = await fetch("http://localhost:3000/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const userData: Usuario = await userRes.json();
-        setUsuario(userData);
+      const userJson = await userRes.json();
+      setUsuario(userJson.usuario); // <- Ajustado aqui!
 
-        // Lista de módulos
-        const modRes = await fetch("http://localhost:3000/modulos", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      // ====== 2) MÓDULOS ======
+      const modRes = await fetch("http://localhost:3000/modulos", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const modData: Modulo[] = await modRes.json();
-        setModulos(modData);
+      const modData: Modulo[] = await modRes.json();
+      setModulos(modData);
 
-        // Histórico de aulas
-        const histRes = await fetch("http://localhost:3000/historico/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      // ====== 3) HISTÓRICO ======
+      const histRes = await fetch("http://localhost:3000/historico/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const histData: AulaConcluida[] = await histRes.json();
-        setHistorico(histData);
-
-      } catch (error) {
-        console.error("Erro ao carregar dashboard:", error);
-      }
-
-      setLoading(false);
+      const histData: AulaConcluida[] = await histRes.json();
+      setHistorico(histData);
+    } catch (error) {
+      console.error("Erro ao carregar dashboard:", error);
     }
 
-    loadData();
+    setLoading(false);
+  }
+
+  // --- useEffect correto (sem warning do React) ---
+  useEffect(() => {
+    const carregar = async () => {
+      await loadData();
+    };
+
+    carregar();
   }, []);
 
-  if (loading) return <p className="text-center mt-5">Carregando...</p>;
+  if (loading)
+    return <p className="text-center mt-5">Carregando...</p>;
 
   return (
     <div className="container-fluid bg-light min-vh-100 p-0">
+
       {/* Top bar */}
       <nav className="navbar navbar-dark bg-danger px-4">
         <span className="navbar-brand mb-0 h1 text-white">Portal do Aluno</span>
       </nav>
 
       <div className="row g-0">
+
         {/* Sidebar */}
         <div className="col-12 col-md-3 col-lg-2 bg-black text-white p-3">
           <h5 className="text-center mb-4">Menu</h5>
@@ -112,6 +119,7 @@ export default function DashboardAluno() {
                   </div>
                 </div>
               ))}
+
               {modulos.length === 0 && (
                 <p className="text-muted">Nenhum módulo disponível.</p>
               )}
